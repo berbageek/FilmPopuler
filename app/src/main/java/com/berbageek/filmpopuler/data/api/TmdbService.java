@@ -40,19 +40,22 @@ public class TmdbService {
 
     @NonNull
     private static OkHttpClient getHttpClient() {
-        return new OkHttpClient.Builder()
-                .addInterceptor(new Interceptor() {
-                    @Override
-                    public Response intercept(Chain chain) throws IOException {
-                        Request request = chain.request();
-                        HttpUrl url = request.url().newBuilder()
-                                .addQueryParameter("api_key", API_KEY)
-                                .build();
-                        request = request.newBuilder().url(url).build();
+        if (client == null) {
+            client = new OkHttpClient.Builder()
+                    .addInterceptor(new Interceptor() {
+                        @Override
+                        public Response intercept(Chain chain) throws IOException {
+                            Request request = chain.request();
+                            HttpUrl url = request.url().newBuilder()
+                                    .addQueryParameter("api_key", API_KEY)
+                                    .build();
+                            request = request.newBuilder().url(url).build();
 
-                        return chain.proceed(request);
-                    }
-                }).build();
+                            return chain.proceed(request);
+                        }
+                    }).build();
+        }
+        return client;
     }
 
     public static TmdbApiService open() {

@@ -28,6 +28,9 @@ public class TmdbService {
     private static Gson gson;
     private static OkHttpClient client;
 
+    private TmdbService() {
+    }
+
     private static Gson getGson() {
         if (gson == null) {
             gson = new Gson();

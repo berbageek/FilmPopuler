@@ -1,5 +1,7 @@
 package com.berbageek.filmpopuler.features.main.model;
 
+import com.berbageek.filmpopuler.R;
+
 /**
  * Created by Muhammad Fiqri Muthohar on 10/19/17.
  */
@@ -29,7 +31,7 @@ public class MovieItem implements MainItem {
 
     @Override
     public int getType() {
-        return TYPE_MOVIE;
+        return R.layout.main_movie_item;
     }
 
     @Override

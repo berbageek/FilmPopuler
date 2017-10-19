@@ -1,6 +1,5 @@
 package com.berbageek.filmpopuler.features.main.adapter;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,8 +25,6 @@ public class MainAdapter extends RecyclerView.Adapter<BaseViewHolder> {
     private List<MainItem> mainItemList;
     private MainListItemClickListener mainListItemClickListener;
     private MovieItemClickListener movieItemClickListener;
-
-    private Context context;
 
     public MainAdapter(MainListItemClickListener mainListItemClickListener) {
         this.mainListItemClickListener = mainListItemClickListener;
@@ -59,10 +56,10 @@ public class MainAdapter extends RecyclerView.Adapter<BaseViewHolder> {
 
     @Override
     public BaseViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        if (viewType == MainItem.TYPE_MOVIE) {
-            View view = LayoutInflater
-                    .from(viewGroup.getContext())
-                    .inflate(R.layout.main_movie_item, viewGroup, false);
+        View view = LayoutInflater
+                .from(viewGroup.getContext())
+                .inflate(viewType, viewGroup, false);
+        if (viewType == R.layout.main_movie_item) {
             return new MovieViewHolder(view, movieItemClickListener);
         }
         return null;

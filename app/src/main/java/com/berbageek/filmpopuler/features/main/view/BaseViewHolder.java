@@ -10,7 +10,7 @@ import com.berbageek.filmpopuler.features.main.model.MainItem;
  */
 
 public abstract class BaseViewHolder extends RecyclerView.ViewHolder {
-    public BaseViewHolder(View itemView) {
+    BaseViewHolder(View itemView) {
         super(itemView);
     }
 

@@ -5,8 +5,5 @@ package com.berbageek.filmpopuler.features.main.model;
  */
 
 public interface MainItem {
-    int TYPE_NONE = 0;
-    int TYPE_MOVIE = 1;
-
     int getType();
 }

@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     MainAdapter mainAdapter;
 
     MainListItemClickListener mainListItemClickListener;
-    RecyclerView.LayoutManager layoutManager;
+    GridLayoutManager layoutManager;
     Toast toast;
 
     @Override
@@ -67,6 +67,12 @@ public class MainActivity extends AppCompatActivity {
         mainListView.setAdapter(mainAdapter);
         mainListView.setItemAnimator(new DefaultItemAnimator());
         layoutManager = new GridLayoutManager(this, 2);
+        layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                return position != RecyclerView.NO_POSITION && (position % 5) == 0 ? 2 : 1;
+            }
+        });
         mainListView.setLayoutManager(layoutManager);
     }
 

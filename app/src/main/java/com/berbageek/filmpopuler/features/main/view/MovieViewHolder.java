@@ -17,9 +17,12 @@ import com.squareup.picasso.Picasso;
 
 public class MovieViewHolder extends BaseViewHolder {
 
-    ImageView posterImageView;
+    private static final String SMALL_POSTER_SIZE = "w342/";
+    private static final String MEDIUM_POSTER_SIZE = "w500/";
 
-    MovieItemClickListener listener;
+    private ImageView posterImageView;
+    private MovieItemClickListener listener;
+    private String imageSize;
 
     public MovieViewHolder(View itemView, MovieItemClickListener itemListener) {
         super(itemView);
@@ -41,11 +44,20 @@ public class MovieViewHolder extends BaseViewHolder {
         });
     }
 
+    private void setImageSize(int position) {
+        imageSize = positionDivisibleByFive(position) ? MEDIUM_POSTER_SIZE : SMALL_POSTER_SIZE;
+    }
+
+    private boolean positionDivisibleByFive(int position) {
+        return position != RecyclerView.NO_POSITION && (position % 5 == 0);
+    }
+
     @Override
     public void bindView(MainItem item) {
         MovieItem movieItem = (MovieItem) item;
+        setImageSize(getAdapterPosition());
         Picasso.with(itemView.getContext())
-                .load(TmdbConstant.IMAGE_BASE_URL + "w185/" + movieItem.getPosterPath())
+                .load(TmdbConstant.IMAGE_BASE_URL + imageSize + movieItem.getPosterPath())
                 .placeholder(R.drawable.ic_image_black_24dp)
                 .error(R.drawable.ic_broken_image_black_24dp)
                 .into(posterImageView);

@@ -40,7 +40,7 @@ public class MovieData {
     private double voteAverage;
 
     @SerializedName("id")
-    private int id;
+    private long id;
 
     @SerializedName("adult")
     private boolean adult;
@@ -136,11 +136,11 @@ public class MovieData {
         this.voteAverage = voteAverage;
     }
 
-    public int getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(long id) {
         this.id = id;
     }
 

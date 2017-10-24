@@ -145,7 +145,7 @@ public class MovieDetailActivity extends AppCompatActivity
                     "Release date : %s",
                     dateFormat.format(movieReleaseDate))
             );
-            movieRatingField.setText(String.format(Locale.getDefault(), "%.2f", movieData.getVoteAverage()));
+            movieRatingField.setText(String.format(Locale.getDefault(), "%.1f", movieData.getVoteAverage()));
             Picasso.with(this)
                     .load(TmdbConstant.IMAGE_BASE_URL + "w342/" + movieData.getPosterPath())
                     .placeholder(R.drawable.ic_image_black_24dp)

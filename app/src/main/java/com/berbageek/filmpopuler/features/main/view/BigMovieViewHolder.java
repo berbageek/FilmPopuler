@@ -28,6 +28,7 @@ public class BigMovieViewHolder extends BaseViewHolder {
 
     private ImageView posterImageView;
     private TextView movieTitleField;
+    private TextView movieOverviewField;
     private ViewGroup movieInfoWrapper;
     private MovieItemClickListener listener;
     private String imageSize = SMALL_POSTER_SIZE;
@@ -44,6 +45,7 @@ public class BigMovieViewHolder extends BaseViewHolder {
     private void setupViews(final View itemView) {
         posterImageView = itemView.findViewById(R.id.big_movie_item_poster_image);
         movieTitleField = itemView.findViewById(R.id.big_movie_item_title);
+        movieOverviewField = itemView.findViewById(R.id.big_movie_item_overview);
         movieInfoWrapper = itemView.findViewById(R.id.big_movie_item_info_wrapper);
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,7 +73,7 @@ public class BigMovieViewHolder extends BaseViewHolder {
                         /* by default palette ignore certain hues (e.g. pure black/white) but we don't want this. */
                         .clearFilters()
                         /* - 1 to work around https://code.google.com/p/android/issues/detail?id=191013 */
-                        .setRegion(0, 0, bitmap.getWidth() - 1, twentyFourDip)
+//                        .setRegion(0, 0, bitmap.getWidth() - 1, twentyFourDip)
                         .generate(new Palette.PaletteAsyncListener() {
                             @Override
                             public void onGenerated(Palette palette) {
@@ -92,6 +94,9 @@ public class BigMovieViewHolder extends BaseViewHolder {
                                 }
                                 if (movieTitleField != null) {
                                     movieTitleField.setTextColor(swatch.getTitleTextColor());
+                                }
+                                if (movieOverviewField != null) {
+                                    movieOverviewField.setTextColor(swatch.getBodyTextColor());
                                 }
                             }
                         });
@@ -117,6 +122,7 @@ public class BigMovieViewHolder extends BaseViewHolder {
     public void bindView(MainItem item) {
         BigMovieItem movieItem = (BigMovieItem) item;
         movieTitleField.setText(movieItem.getMovieName());
+        movieOverviewField.setText(movieItem.getOverview());
         Picasso.with(itemView.getContext())
                 .load(TmdbConstant.IMAGE_BASE_URL + imageSize + movieItem.getPosterPath())
                 .placeholder(R.drawable.ic_image_black_24dp)

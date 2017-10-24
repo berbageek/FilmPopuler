@@ -10,11 +10,13 @@ public class BigMovieItem implements MovieItem {
     private final String movieId;
     private final String movieName;
     private final String posterPath;
+    private final String overview;
 
-    public BigMovieItem(String movieId, String movieName, String posterPath) {
+    public BigMovieItem(String movieId, String movieName, String posterPath, String overview) {
         this.movieId = movieId;
         this.movieName = movieName;
         this.posterPath = posterPath;
+        this.overview = overview;
     }
 
     public String getMovieId() {
@@ -27,6 +29,10 @@ public class BigMovieItem implements MovieItem {
 
     public String getPosterPath() {
         return posterPath;
+    }
+
+    public String getOverview() {
+        return overview;
     }
 
     @Override

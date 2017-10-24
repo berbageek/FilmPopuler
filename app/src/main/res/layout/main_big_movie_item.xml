@@ -30,6 +30,18 @@
             android:layout_centerVertical="true"
             android:maxLines="2"
             tools:text="Title" />
+
+        <TextView
+            android:id="@+id/big_movie_item_overview"
+            style="@style/TextAppearance.AppCompat.Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/big_movie_item_title"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:maxLines="3"
+            tools:text="Title" />
     </RelativeLayout>
 
 </LinearLayout>

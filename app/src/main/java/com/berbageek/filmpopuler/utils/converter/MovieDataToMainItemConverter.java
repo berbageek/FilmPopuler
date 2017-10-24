@@ -30,12 +30,13 @@ public class MovieDataToMainItemConverter {
         return results;
     }
 
-    public static MainItem itemCreator(MovieData movieData, int position) {
+    static MainItem itemCreator(MovieData movieData, int position) {
         if (position % 5 == 0) {
             return new BigMovieItem(
                     String.valueOf(movieData.getId()),
                     movieData.getTitle(),
-                    movieData.getPosterPath());
+                    movieData.getPosterPath(),
+                    movieData.getOverview());
         } else {
             return new StandardMovieItem(
                     String.valueOf(movieData.getId()),

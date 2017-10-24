@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         layoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                return position != RecyclerView.NO_POSITION && (position % 5) == 0 ? 2 : 1;
+                return position != RecyclerView.NO_POSITION ? mainAdapter.getItemSize(position) : 1;
             }
         });
         mainListView.setLayoutManager(layoutManager);
@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                     List<MovieData> movies = data.getMovieDataList();
                     if (movies != null && !movies.isEmpty()) {
                         showMovieList(
-                                MovieDataToMainItemConverter.getMainItemList(movies)
+                                MovieDataToMainItemConverter.getMainItemList("Popular Movies", movies)
                         );
                     } else {
                         showEmptyMovieList();

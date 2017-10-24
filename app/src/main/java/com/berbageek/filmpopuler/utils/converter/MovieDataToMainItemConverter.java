@@ -3,8 +3,10 @@ package com.berbageek.filmpopuler.utils.converter;
 import android.support.annotation.NonNull;
 
 import com.berbageek.filmpopuler.data.model.MovieData;
+import com.berbageek.filmpopuler.features.main.model.BigMovieItem;
+import com.berbageek.filmpopuler.features.main.model.HeaderItem;
 import com.berbageek.filmpopuler.features.main.model.MainItem;
-import com.berbageek.filmpopuler.features.main.model.MovieItemBuilder;
+import com.berbageek.filmpopuler.features.main.model.StandardMovieItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,15 +19,28 @@ public class MovieDataToMainItemConverter {
     private MovieDataToMainItemConverter() {
     }
 
-    public static List<MainItem> getMainItemList(@NonNull List<MovieData> movieDataList) {
+    public static List<MainItem> getMainItemList(String headerTitle, @NonNull List<MovieData> movieDataList) {
         List<MainItem> results = new ArrayList<>();
+        int pos = 0;
+        results.add(new HeaderItem(headerTitle));
         for (MovieData movieData : movieDataList) {
-            results.add(new MovieItemBuilder()
-                    .setMovieName(movieData.getTitle())
-                    .setMovieId(String.valueOf(movieData.getId()))
-                    .setPosterImage(movieData.getPosterPath())
-                    .createMovieItem());
+            results.add(itemCreator(movieData, pos));
+            pos++;
         }
         return results;
+    }
+
+    public static MainItem itemCreator(MovieData movieData, int position) {
+        if (position % 5 == 0) {
+            return new BigMovieItem(
+                    String.valueOf(movieData.getId()),
+                    movieData.getTitle(),
+                    movieData.getPosterPath());
+        } else {
+            return new StandardMovieItem(
+                    String.valueOf(movieData.getId()),
+                    movieData.getTitle(),
+                    movieData.getPosterPath());
+        }
     }
 }

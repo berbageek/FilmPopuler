@@ -11,6 +11,8 @@ import com.berbageek.filmpopuler.features.main.contract.MovieItemClickListener;
 import com.berbageek.filmpopuler.features.main.model.MainItem;
 import com.berbageek.filmpopuler.features.main.model.MovieItem;
 import com.berbageek.filmpopuler.features.main.view.BaseViewHolder;
+import com.berbageek.filmpopuler.features.main.view.BigMovieViewHolder;
+import com.berbageek.filmpopuler.features.main.view.HeaderViewHolder;
 import com.berbageek.filmpopuler.features.main.view.MovieViewHolder;
 
 import java.util.ArrayList;
@@ -36,9 +38,9 @@ public class MainAdapter extends RecyclerView.Adapter<BaseViewHolder> {
         movieItemClickListener = new MovieItemClickListener() {
             @Override
             public void onMovieItemClicked(int position) {
-                MovieItem item = ((MovieItem) mainItemList.get(position));
+                MainItem item = mainItemList.get(position);
                 if (mainListItemClickListener != null) {
-                    mainListItemClickListener.onMovieItemClick(item);
+                    mainListItemClickListener.onMovieItemClick((MovieItem) item);
                 }
             }
         };
@@ -61,6 +63,10 @@ public class MainAdapter extends RecyclerView.Adapter<BaseViewHolder> {
                 .inflate(viewType, viewGroup, false);
         if (viewType == R.layout.main_movie_item) {
             return new MovieViewHolder(view, movieItemClickListener);
+        } else if (viewType == R.layout.main_big_movie_item) {
+            return new BigMovieViewHolder(view, movieItemClickListener);
+        } else if (viewType == R.layout.main_header_item) {
+            return new HeaderViewHolder(view);
         }
         return null;
     }
@@ -73,5 +79,13 @@ public class MainAdapter extends RecyclerView.Adapter<BaseViewHolder> {
     @Override
     public int getItemCount() {
         return mainItemList.size();
+    }
+
+    public int getItemSize(int position) {
+        if (position >= mainItemList.size() || position < 0) {
+            return 0;
+        } else {
+            return mainItemList.get(position).getItemSize();
+        }
     }
 }

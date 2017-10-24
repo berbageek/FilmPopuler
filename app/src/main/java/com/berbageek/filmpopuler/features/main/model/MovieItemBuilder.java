@@ -20,7 +20,7 @@ public class MovieItemBuilder {
         return this;
     }
 
-    public MovieItem createMovieItem() {
-        return new MovieItem(movieId, movieName, posterImage);
+    public StandardMovieItem createMovieItem() {
+        return new StandardMovieItem(movieId, movieName, posterImage);
     }
 }

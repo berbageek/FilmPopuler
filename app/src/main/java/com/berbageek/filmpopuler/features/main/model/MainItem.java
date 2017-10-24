@@ -6,4 +6,6 @@ package com.berbageek.filmpopuler.features.main.model;
 
 public interface MainItem {
     int getType();
+
+    int getItemSize();
 }

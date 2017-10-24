@@ -8,7 +8,7 @@ import com.berbageek.filmpopuler.R;
 import com.berbageek.filmpopuler.data.api.TmdbConstant;
 import com.berbageek.filmpopuler.features.main.contract.MovieItemClickListener;
 import com.berbageek.filmpopuler.features.main.model.MainItem;
-import com.berbageek.filmpopuler.features.main.model.MovieItem;
+import com.berbageek.filmpopuler.features.main.model.StandardMovieItem;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -54,10 +54,10 @@ public class MovieViewHolder extends BaseViewHolder {
 
     @Override
     public void bindView(MainItem item) {
-        MovieItem movieItem = (MovieItem) item;
+        StandardMovieItem standardMovieItem = (StandardMovieItem) item;
         setImageSize(getAdapterPosition());
         Picasso.with(itemView.getContext())
-                .load(TmdbConstant.IMAGE_BASE_URL + imageSize + movieItem.getPosterPath())
+                .load(TmdbConstant.IMAGE_BASE_URL + imageSize + standardMovieItem.getPosterPath())
                 .placeholder(R.drawable.ic_image_black_24dp)
                 .error(R.drawable.ic_broken_image_black_24dp)
                 .into(posterImageView);

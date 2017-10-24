@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.design.widget.AppBarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -17,6 +18,8 @@ import android.widget.TextView;
 import com.berbageek.filmpopuler.R;
 import com.berbageek.filmpopuler.data.api.TmdbConstant;
 import com.berbageek.filmpopuler.data.api.TmdbService;
+import com.berbageek.filmpopuler.data.db.DatabaseHelper;
+import com.berbageek.filmpopuler.data.db.contract.MovieRepository;
 import com.berbageek.filmpopuler.data.model.MovieData;
 import com.berbageek.filmpopuler.data.model.MovieDetail;
 import com.berbageek.filmpopuler.utils.AnimationUtils;
@@ -58,6 +61,8 @@ public class MovieDetailActivity extends AppCompatActivity
 
     Toolbar toolbar;
 
+    FloatingActionButton favoriteButton;
+
     ViewGroup detailWrapperView;
 
     String movieId;
@@ -69,8 +74,10 @@ public class MovieDetailActivity extends AppCompatActivity
     AppBarLayout appBarLayout;
 
     SimpleDateFormat dateFormat = new SimpleDateFormat("d MMM yyy", Locale.getDefault());
+    MovieRepository movieRepository;
     private boolean isTitleVisible = false;
     private boolean isTitleContainerVisible = true;
+    private boolean isFavored = false;
 
     public static void showMovieDetailPage(Context context, String movieId,
                                            String movieTitle, String posterPath,
@@ -90,6 +97,9 @@ public class MovieDetailActivity extends AppCompatActivity
 
         viewBinding();
         processIntent();
+
+        movieRepository = DatabaseHelper.getInstance(this);
+
         setUpToolbar();
         setUpDetails();
         setUpMovieDetail();
@@ -120,6 +130,8 @@ public class MovieDetailActivity extends AppCompatActivity
 
         moviePosterView = findViewById(R.id.movie_detail_poster_image);
         movieBackdropView = findViewById(R.id.movie_detail_backdrop_image);
+
+        favoriteButton = findViewById(R.id.movie_detail_favorite_button);
     }
 
     private void setUpToolbar() {
@@ -155,6 +167,34 @@ public class MovieDetailActivity extends AppCompatActivity
                     .load(TmdbConstant.IMAGE_BASE_URL + "w780/" + movieData.getBackdropPath())
                     .into(movieBackdropView);
         }
+        isFavored = movieRepository.isMovieFavored(movieId);
+        if (isFavored) {
+            setFavoriteImage();
+        } else {
+            setNonFavoriteImage();
+        }
+        favoriteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isFavored) {
+                    isFavored = false;
+                    movieRepository.removeFavoriteMovie(movieId);
+                    setNonFavoriteImage();
+                } else {
+                    isFavored = true;
+                    movieRepository.addFavoriteMovie(movieData);
+                    setFavoriteImage();
+                }
+            }
+        });
+    }
+
+    private void setNonFavoriteImage() {
+        favoriteButton.setImageResource(R.drawable.ic_favorite_border_white_24dp);
+    }
+
+    private void setFavoriteImage() {
+        favoriteButton.setImageResource(R.drawable.ic_favorite_white_24dp);
     }
 
     @Override
@@ -187,7 +227,7 @@ public class MovieDetailActivity extends AppCompatActivity
 
             @Override
             public void onFailure(Call<MovieDetail> call, Throwable throwable) {
-                // do nothing
+                // retry fetch movie detail
                 getMovieDetail();
             }
         });

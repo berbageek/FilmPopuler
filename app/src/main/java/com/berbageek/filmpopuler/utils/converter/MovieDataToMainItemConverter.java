@@ -36,12 +36,14 @@ public class MovieDataToMainItemConverter {
                     String.valueOf(movieData.getId()),
                     movieData.getTitle(),
                     movieData.getPosterPath(),
-                    movieData.getOverview());
+                    movieData.getOverview(),
+                    movieData);
         } else {
             return new StandardMovieItem(
                     String.valueOf(movieData.getId()),
                     movieData.getTitle(),
-                    movieData.getPosterPath());
+                    movieData.getPosterPath(),
+                    movieData);
         }
     }
 }

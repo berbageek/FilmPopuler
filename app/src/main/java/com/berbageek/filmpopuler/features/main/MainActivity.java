@@ -14,6 +14,7 @@ import com.berbageek.filmpopuler.R;
 import com.berbageek.filmpopuler.data.api.TmdbService;
 import com.berbageek.filmpopuler.data.model.MovieData;
 import com.berbageek.filmpopuler.data.model.MovieDataResponse;
+import com.berbageek.filmpopuler.features.detail.MovieDetailActivity;
 import com.berbageek.filmpopuler.features.main.adapter.MainAdapter;
 import com.berbageek.filmpopuler.features.main.contract.MainListItemClickListener;
 import com.berbageek.filmpopuler.features.main.model.MainItem;
@@ -60,7 +61,14 @@ public class MainActivity extends AppCompatActivity {
         mainListItemClickListener = new MainListItemClickListener() {
             @Override
             public void onMovieItemClick(MovieItem movieItem) {
-                showToastMessage(movieItem.getMovieName());
+                MovieDetailActivity.showMovieDetailPage(
+                        MainActivity.this,
+                        movieItem.getMovieId(),
+                        movieItem.getMovieTitle(),
+                        movieItem.getPosterPath(),
+                        movieItem.getMovieData()
+                );
+                showToastMessage(movieItem.getMovieTitle());
             }
         };
         mainAdapter = new MainAdapter(mainListItemClickListener);

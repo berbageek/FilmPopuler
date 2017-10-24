@@ -121,7 +121,7 @@ public class BigMovieViewHolder extends BaseViewHolder {
     @Override
     public void bindView(MainItem item) {
         BigMovieItem movieItem = (BigMovieItem) item;
-        movieTitleField.setText(movieItem.getMovieName());
+        movieTitleField.setText(movieItem.getMovieTitle());
         movieOverviewField.setText(movieItem.getOverview());
         Picasso.with(itemView.getContext())
                 .load(TmdbConstant.IMAGE_BASE_URL + imageSize + movieItem.getPosterPath())

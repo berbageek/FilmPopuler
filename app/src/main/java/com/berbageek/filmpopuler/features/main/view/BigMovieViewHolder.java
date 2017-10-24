@@ -69,7 +69,7 @@ public class BigMovieViewHolder extends BaseViewHolder {
                 Palette.from(bitmap)
                         .maximumColorCount(32)
                         /* by default palette ignore certain hues (e.g. pure black/white) but we don't want this. */
-//                        .clearFilters()
+                        .clearFilters()
                         /* - 1 to work around https://code.google.com/p/android/issues/detail?id=191013 */
                         .setRegion(0, 0, bitmap.getWidth() - 1, twentyFourDip)
                         .generate(new Palette.PaletteAsyncListener() {

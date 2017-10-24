@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +16,9 @@ import android.widget.TextView;
 
 import com.berbageek.filmpopuler.R;
 import com.berbageek.filmpopuler.data.api.TmdbConstant;
+import com.berbageek.filmpopuler.data.api.TmdbService;
 import com.berbageek.filmpopuler.data.model.MovieData;
+import com.berbageek.filmpopuler.data.model.MovieDetail;
 import com.berbageek.filmpopuler.utils.AnimationUtils;
 import com.squareup.picasso.Picasso;
 
@@ -23,6 +26,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MovieDetailActivity extends AppCompatActivity
         implements AppBarLayout.OnOffsetChangedListener {
@@ -57,6 +64,7 @@ public class MovieDetailActivity extends AppCompatActivity
     String movieTitle;
     String posterPath;
     MovieData movieData;
+    MovieDetail movieDetail;
 
     AppBarLayout appBarLayout;
 
@@ -84,6 +92,7 @@ public class MovieDetailActivity extends AppCompatActivity
         processIntent();
         setUpToolbar();
         setUpDetails();
+        setUpMovieDetail();
     }
 
     private void processIntent() {
@@ -167,6 +176,36 @@ public class MovieDetailActivity extends AppCompatActivity
         handleToolbarTitleVisibility(percentage);
     }
 
+    private void getMovieDetail() {
+        Call<MovieDetail> call = TmdbService.open().getMovieDetail(movieId);
+        call.enqueue(new Callback<MovieDetail>() {
+            @Override
+            public void onResponse(Call<MovieDetail> call, Response<MovieDetail> response) {
+                movieDetail = response.body();
+                setUpMovieDetail();
+            }
+
+            @Override
+            public void onFailure(Call<MovieDetail> call, Throwable throwable) {
+                // do nothing
+                getMovieDetail();
+            }
+        });
+    }
+
+    private void setUpMovieDetail() {
+        if (movieDetail != null) {
+            movieDetailDurationField.setText(String.format(
+                    Locale.getDefault(),
+                    "%d minute(s)",
+                    movieDetail.getRuntime())
+            );
+            movieDetailTaglineField.setText(TextUtils.isEmpty(movieDetail.getTagline())
+                    ? "-" : movieDetail.getTagline());
+        } else {
+            getMovieDetail();
+        }
+    }
 
     // modified code from https://github.com/saulmm/CoordinatorBehaviorExample
     private void handleToolbarTitleVisibility(float percentage) {

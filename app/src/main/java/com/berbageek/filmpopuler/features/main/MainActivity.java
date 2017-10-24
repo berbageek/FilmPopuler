@@ -68,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
                         movieItem.getPosterPath(),
                         movieItem.getMovieData()
                 );
-                showToastMessage(movieItem.getMovieTitle());
             }
         };
         mainAdapter = new MainAdapter(mainListItemClickListener);
@@ -109,14 +108,6 @@ public class MainActivity extends AppCompatActivity {
     private void hideMessage() {
         mainMessageField.setText(null);
         mainMessageField.setVisibility(View.GONE);
-    }
-
-    private void showToastMessage(String message) {
-        if (toast != null) {
-            toast.cancel();
-        }
-        toast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
-        toast.show();
     }
 
     private void fetchPopularMovie() {

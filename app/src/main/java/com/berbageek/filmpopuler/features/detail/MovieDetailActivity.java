@@ -7,7 +7,6 @@ import android.os.Parcelable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -93,11 +92,6 @@ public class MovieDetailActivity extends AppCompatActivity
             movieTitle = getIntent().getStringExtra(KEY_MOVIE_TITLE);
             posterPath = getIntent().getStringExtra(KEY_POSTER_PATH);
             movieData = getIntent().getParcelableExtra(KEY_MOVIE_DATA);
-            if (movieData != null) {
-                Log.d(TAG, "processIntent: " + movieData);
-            } else {
-                Log.d(TAG, "processIntent: null movie data");
-            }
         }
     }
 

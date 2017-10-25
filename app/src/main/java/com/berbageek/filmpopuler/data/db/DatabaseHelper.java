@@ -115,8 +115,7 @@ public class DatabaseHelper extends SQLiteOpenHelper implements MovieRepository 
             values.put(Movie.COLUMN_MOVIE_FAVORED, 1);
             values.put(Movie.COLUMN_MOVIE_POSTER_PATH, movieData.getPosterPath());
             values.put(Movie.COLUMN_MOVIE_BACKDROP_PATH, movieData.getBackdropPath());
-            long id = db.insert(Movie.TABLE_NAME, null, values);
-            Log.d(TAG, "addFavoriteMovie: inserted id = " + id);
+            db.insert(Movie.TABLE_NAME, null, values);
             db.setTransactionSuccessful();
         } catch (Exception e) {
             Log.e(TAG, "addFavoriteMovie: ", e);
@@ -138,7 +137,6 @@ public class DatabaseHelper extends SQLiteOpenHelper implements MovieRepository 
             if (cursor != null && cursor.moveToFirst()) {
                 isMovieFavored = true;
             }
-            Log.d(TAG, "isMovieFavored: " + isMovieFavored);
         } catch (Exception e) {
             Log.e(TAG, "isMovieFavored: ", e);
         } finally {

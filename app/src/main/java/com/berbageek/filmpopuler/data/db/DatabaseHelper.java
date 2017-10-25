@@ -53,8 +53,13 @@ public class DatabaseHelper extends SQLiteOpenHelper implements MovieRepository 
                     new String[]{
                             Movie.COLUMN_MOVIE_ID,
                             Movie.COLUMN_MOVIE_TITLE,
-                            Movie.COLUMN_MOVIE_POSTER_PATH,
                             Movie.COLUMN_MOVIE_OVERVIEW,
+                            Movie.COLUMN_MOVIE_VOTE_COUNT,
+                            Movie.COLUMN_MOVIE_VOTE_AVERAGE,
+                            Movie.COLUMN_MOVIE_RELEASE_DATE,
+                            Movie.COLUMN_MOVIE_FAVORED,
+                            Movie.COLUMN_MOVIE_POSTER_PATH,
+                            Movie.COLUMN_MOVIE_BACKDROP_PATH
                     },
                     null,
                     null,
@@ -65,14 +70,22 @@ public class DatabaseHelper extends SQLiteOpenHelper implements MovieRepository 
             if (cursor != null && cursor.moveToFirst()) {
                 final int indexMovieId = cursor.getColumnIndex(Movie.COLUMN_MOVIE_ID);
                 final int indexMovieTitle = cursor.getColumnIndex(Movie.COLUMN_MOVIE_TITLE);
-                final int indexMoviePosterPath = cursor.getColumnIndex(Movie.COLUMN_MOVIE_POSTER_PATH);
                 final int indexMovieOverview = cursor.getColumnIndex(Movie.COLUMN_MOVIE_OVERVIEW);
+                final int indexMovieVoteCount = cursor.getColumnIndex(Movie.COLUMN_MOVIE_VOTE_COUNT);
+                final int indexMovieVoteAverage = cursor.getColumnIndex(Movie.COLUMN_MOVIE_VOTE_AVERAGE);
+                final int indexMovieReleaseDate = cursor.getColumnIndex(Movie.COLUMN_MOVIE_RELEASE_DATE);
+                final int indexMoviePosterPath = cursor.getColumnIndex(Movie.COLUMN_MOVIE_POSTER_PATH);
+                final int indexMovieBackdropPath = cursor.getColumnIndex(Movie.COLUMN_MOVIE_BACKDROP_PATH);
                 do {
                     MovieData movieData = new MovieData();
                     movieData.setId(cursor.getLong(indexMovieId));
                     movieData.setTitle(cursor.getString(indexMovieTitle));
-                    movieData.setPosterPath(cursor.getString(indexMoviePosterPath));
                     movieData.setOverview(cursor.getString(indexMovieOverview));
+                    movieData.setVoteCount(cursor.getInt(indexMovieVoteCount));
+                    movieData.setVoteAverage(cursor.getDouble(indexMovieVoteAverage));
+                    movieData.setReleaseDate(cursor.getString(indexMovieReleaseDate));
+                    movieData.setPosterPath(cursor.getString(indexMoviePosterPath));
+                    movieData.setBackdropPath(cursor.getString(indexMovieBackdropPath));
                     results.add(movieData);
                 } while (cursor.moveToNext());
             }
@@ -95,9 +108,13 @@ public class DatabaseHelper extends SQLiteOpenHelper implements MovieRepository 
             ContentValues values = new ContentValues();
             values.put(Movie.COLUMN_MOVIE_ID, movieData.getId());
             values.put(Movie.COLUMN_MOVIE_TITLE, movieData.getTitle());
+            values.put(Movie.COLUMN_MOVIE_OVERVIEW, movieData.getOverview());
             values.put(Movie.COLUMN_MOVIE_VOTE_COUNT, movieData.getVoteCount());
             values.put(Movie.COLUMN_MOVIE_VOTE_AVERAGE, movieData.getVoteAverage());
+            values.put(Movie.COLUMN_MOVIE_RELEASE_DATE, movieData.getReleaseDate());
             values.put(Movie.COLUMN_MOVIE_FAVORED, 1);
+            values.put(Movie.COLUMN_MOVIE_POSTER_PATH, movieData.getPosterPath());
+            values.put(Movie.COLUMN_MOVIE_BACKDROP_PATH, movieData.getBackdropPath());
             long id = db.insert(Movie.TABLE_NAME, null, values);
             Log.d(TAG, "addFavoriteMovie: inserted id = " + id);
             db.setTransactionSuccessful();
@@ -115,7 +132,8 @@ public class DatabaseHelper extends SQLiteOpenHelper implements MovieRepository 
         boolean isMovieFavored = false;
         try {
             final String query = "SELECT * FROM " + Movie.TABLE_NAME
-                    + " WHERE " + Movie.COLUMN_MOVIE_ID + " = ? ";
+                    + " WHERE " + Movie.COLUMN_MOVIE_ID + " = ? "
+                    + " AND " + Movie.COLUMN_MOVIE_FAVORED + " = 1";
             cursor = db.rawQuery(query, new String[]{movieId});
             if (cursor != null && cursor.moveToFirst()) {
                 isMovieFavored = true;
@@ -141,7 +159,11 @@ public class DatabaseHelper extends SQLiteOpenHelper implements MovieRepository 
         SQLiteDatabase db = getWritableDatabase();
         db.beginTransaction();
         try {
-            db.delete(Movie.TABLE_NAME, Movie.COLUMN_MOVIE_ID + " = ?", new String[]{movieId});
+            db.delete(
+                    Movie.TABLE_NAME,
+                    Movie.COLUMN_MOVIE_ID + " = ?",
+                    new String[]{movieId}
+            );
             db.setTransactionSuccessful();
         } catch (Exception e) {
             Log.e(TAG, "removeFavoriteMovie: ", e);

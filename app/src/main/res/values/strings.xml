@@ -12,4 +12,6 @@
     <string name="tools_title">Title</string>
 
     <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tempus justo leo, maximus vehicula ipsum mattis eu. Sed at eleifend quam. Cras vitae consequat magna, vitae lobortis erat. Etiam in mi vitae metus mattis gravida quis cursus diam. Praesent luctus justo vel ullamcorper eleifend. Vestibulum dictum purus nec turpis facilisis, vel tincidunt ex consequat. Morbi a erat eu lacus aliquam elementum. Nam pretium mauris id lorem vehicula finibus.</string>
+    <string name="popular_movie">Popular Movie</string>
+    <string name="favorite_movie">Favorite Movie</string>
 </resources>

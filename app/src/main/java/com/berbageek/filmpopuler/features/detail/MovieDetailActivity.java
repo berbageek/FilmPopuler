@@ -2,10 +2,13 @@ package com.berbageek.filmpopuler.features.detail;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
@@ -22,6 +25,7 @@ import com.berbageek.filmpopuler.data.db.DatabaseHelper;
 import com.berbageek.filmpopuler.data.db.contract.MovieRepository;
 import com.berbageek.filmpopuler.data.model.MovieData;
 import com.berbageek.filmpopuler.data.model.MovieDetail;
+import com.berbageek.filmpopuler.features.detail.loader.FavoriteMovieLoader;
 import com.berbageek.filmpopuler.utils.AnimationUtils;
 import com.squareup.picasso.Picasso;
 
@@ -74,10 +78,32 @@ public class MovieDetailActivity extends AppCompatActivity
     AppBarLayout appBarLayout;
 
     SimpleDateFormat dateFormat = new SimpleDateFormat("d MMM yyy", Locale.getDefault());
-    MovieRepository movieRepository;
+    AddOrDeleteFavoriteMovieTask addOrDeleteFavoriteMovieTask;
     private boolean isTitleVisible = false;
     private boolean isTitleContainerVisible = true;
     private boolean isFavored = false;
+    LoaderManager.LoaderCallbacks<Boolean> favoriteMovieCallback = new LoaderManager.LoaderCallbacks<Boolean>() {
+        @Override
+        public Loader<Boolean> onCreateLoader(int i, Bundle bundle) {
+            return new FavoriteMovieLoader(MovieDetailActivity.this, movieId);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<Boolean> loader, Boolean favored) {
+            enableFavoriteButton();
+            isFavored = favored;
+            if (isFavored) {
+                setFavoriteImage();
+            } else {
+                setNonFavoriteImage();
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<Boolean> loader) {
+            // do nothing
+        }
+    };
 
     public static void showMovieDetailPage(Context context, String movieId,
                                            String movieTitle, String posterPath,
@@ -98,11 +124,17 @@ public class MovieDetailActivity extends AppCompatActivity
         viewBinding();
         processIntent();
 
-        movieRepository = DatabaseHelper.getInstance(this);
-
         setUpToolbar();
         setUpDetails();
         setUpMovieDetail();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (addOrDeleteFavoriteMovieTask != null) {
+            addOrDeleteFavoriteMovieTask.cancel(true);
+        }
     }
 
     private void processIntent() {
@@ -167,34 +199,34 @@ public class MovieDetailActivity extends AppCompatActivity
                     .load(TmdbConstant.IMAGE_BASE_URL + "w780/" + movieData.getBackdropPath())
                     .into(movieBackdropView);
         }
-        isFavored = movieRepository.isMovieFavored(movieId);
-        if (isFavored) {
-            setFavoriteImage();
-        } else {
-            setNonFavoriteImage();
-        }
+        disableFavoriteButton();
+        getSupportLoaderManager().initLoader(
+                FavoriteMovieLoader.FAVORITE_MOVIE_LOADER_ID,
+                null,
+                favoriteMovieCallback
+        );
         favoriteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isFavored) {
-                    isFavored = false;
-                    movieRepository.removeFavoriteMovie(movieId);
-                    setNonFavoriteImage();
-                } else {
-                    isFavored = true;
-                    movieRepository.addFavoriteMovie(movieData);
-                    setFavoriteImage();
+                if (addOrDeleteFavoriteMovieTask != null) {
+                    addOrDeleteFavoriteMovieTask.cancel(true);
                 }
+                addOrDeleteFavoriteMovieTask = new AddOrDeleteFavoriteMovieTask(getApplicationContext());
+                addOrDeleteFavoriteMovieTask.execute(movieData);
             }
         });
     }
 
     private void setNonFavoriteImage() {
-        favoriteButton.setImageResource(R.drawable.ic_favorite_border_white_24dp);
+        if (favoriteButton != null) {
+            favoriteButton.setImageResource(R.drawable.ic_favorite_border_white_24dp);
+        }
     }
 
     private void setFavoriteImage() {
-        favoriteButton.setImageResource(R.drawable.ic_favorite_white_24dp);
+        if (favoriteButton != null) {
+            favoriteButton.setImageResource(R.drawable.ic_favorite_white_24dp);
+        }
     }
 
     @Override
@@ -297,6 +329,59 @@ public class MovieDetailActivity extends AppCompatActivity
                         View.VISIBLE
                 );
                 isTitleContainerVisible = true;
+            }
+        }
+    }
+
+    private void enableFavoriteButton() {
+        if (favoriteButton != null) {
+            favoriteButton.setEnabled(true);
+        }
+    }
+
+    private void disableFavoriteButton() {
+        if (favoriteButton != null) {
+            favoriteButton.setEnabled(false);
+        }
+    }
+
+    private class AddOrDeleteFavoriteMovieTask extends AsyncTask<MovieData, Void, Boolean> {
+        MovieRepository movieRepository;
+
+        AddOrDeleteFavoriteMovieTask(Context context) {
+            movieRepository = DatabaseHelper.getInstance(context);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            disableFavoriteButton();
+        }
+
+        @Override
+        protected Boolean doInBackground(MovieData... params) {
+            boolean result = false;
+            final MovieData data = params[0];
+            if (isFavored) {
+                movieRepository.removeFavoriteMovie(String.valueOf(data.getId()));
+            } else {
+                movieRepository.addFavoriteMovie(data);
+                result = true;
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            super.onPostExecute(result);
+            if (!isCancelled()) {
+                isFavored = result;
+                enableFavoriteButton();
+                if (result) {
+                    setFavoriteImage();
+                } else {
+                    setNonFavoriteImage();
+                }
             }
         }
     }

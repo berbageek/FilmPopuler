@@ -1,14 +1,18 @@
 package com.berbageek.filmpopuler.features.main;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.berbageek.filmpopuler.R;
 import com.berbageek.filmpopuler.data.api.TmdbService;
@@ -17,6 +21,7 @@ import com.berbageek.filmpopuler.data.model.MovieDataResponse;
 import com.berbageek.filmpopuler.features.detail.MovieDetailActivity;
 import com.berbageek.filmpopuler.features.main.adapter.MainAdapter;
 import com.berbageek.filmpopuler.features.main.contract.MainListItemClickListener;
+import com.berbageek.filmpopuler.features.main.loader.FavoriteMovieListLoader;
 import com.berbageek.filmpopuler.features.main.model.MainItem;
 import com.berbageek.filmpopuler.features.main.model.MovieItem;
 import com.berbageek.filmpopuler.utils.converter.MovieDataToMainItemConverter;
@@ -30,6 +35,11 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final int STATE_POPULAR_MOVIE = 0;
+    public static final int STATE_FAVORITE_MOVIE = 1;
+
+    public static final String KEY_CURRENT_STATE = "CURRENT_STATE";
+
     TextView mainMessageField;
     ProgressBar mainProgressBar;
     RecyclerView mainListView;
@@ -38,23 +48,64 @@ public class MainActivity extends AppCompatActivity {
 
     MainListItemClickListener mainListItemClickListener;
     GridLayoutManager layoutManager;
-    Toast toast;
+
+    BottomNavigationView bottomNavigationView;
+
+    int currentState = STATE_POPULAR_MOVIE;
+
+    LoaderManager.LoaderCallbacks<List<MovieData>> favoriteMovieLoaderCallback = new LoaderManager.LoaderCallbacks<List<MovieData>>() {
+        @Override
+        public Loader onCreateLoader(int i, Bundle bundle) {
+            return new FavoriteMovieListLoader(MainActivity.this);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<List<MovieData>> loader, List<MovieData> movies) {
+            hideProgressBar();
+            if (movies != null && !movies.isEmpty()) {
+                showMovieList(
+                        MovieDataToMainItemConverter.getMainItemList("Favorite Movies", movies)
+                );
+            } else {
+                showEmptyMovieList();
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader loader) {
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (savedInstanceState != null) {
+            currentState = savedInstanceState.getInt(KEY_CURRENT_STATE, STATE_POPULAR_MOVIE);
+        }
+
         bindViews();
         setUpMainListView();
+        if (currentState == STATE_POPULAR_MOVIE) {
+            fetchPopularMovie();
+        } else {
+            fetchFavoriteMovie();
+        }
+    }
 
-        fetchPopularMovie();
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(KEY_CURRENT_STATE, currentState);
     }
 
     private void bindViews() {
         mainMessageField = findViewById(R.id.main_message);
         mainListView = findViewById(R.id.main_movie_listview);
         mainProgressBar = findViewById(R.id.main_progressbar);
+        bottomNavigationView = findViewById(R.id.main_bottom_navigation);
     }
 
     private void setUpMainListView() {
@@ -81,10 +132,37 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         mainListView.setLayoutManager(layoutManager);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView
+                .OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+                final int menuId = menuItem.getItemId();
+                if (menuId == R.id.action_popular) {
+                    currentState = STATE_POPULAR_MOVIE;
+                    fetchPopularMovie();
+                } else {
+                    currentState = STATE_FAVORITE_MOVIE;
+                    fetchFavoriteMovie();
+                }
+                return true;
+            }
+        });
+        bottomNavigationView.setOnNavigationItemReselectedListener(new BottomNavigationView
+                .OnNavigationItemReselectedListener() {
+            @Override
+            public void onNavigationItemReselected(@NonNull MenuItem menuItem) {
+                // do nothing
+            }
+        });
     }
 
     private void showMovieList(List<MainItem> mainItemList) {
         mainAdapter.setMainItemList(mainItemList);
+        mainListView.setVisibility(View.VISIBLE);
+    }
+
+    private void hideMovieList() {
+        mainListView.setVisibility(View.GONE);
     }
 
     private void showEmptyMovieList() {
@@ -113,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
     private void fetchPopularMovie() {
         showProgressBar();
         hideMessage();
+        hideMovieList();
         Call<MovieDataResponse> call = TmdbService.open().getMostPopularMovies(1);
         call.enqueue(new Callback<MovieDataResponse>() {
             @Override
@@ -139,5 +218,16 @@ public class MainActivity extends AppCompatActivity {
                 showMessage(t.getMessage());
             }
         });
+    }
+
+    private void fetchFavoriteMovie() {
+        showProgressBar();
+        hideMessage();
+        hideMovieList();
+        getSupportLoaderManager().restartLoader(
+                FavoriteMovieListLoader.FAVORITE_MOVIE_LIST_LOADER_ID,
+                null,
+                favoriteMovieLoaderCallback
+        );
     }
 }

@@ -1,17 +1,20 @@
 package com.berbageek.filmpopuler.features.detail;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,11 +24,11 @@ import android.widget.TextView;
 import com.berbageek.filmpopuler.R;
 import com.berbageek.filmpopuler.data.api.TmdbConstant;
 import com.berbageek.filmpopuler.data.api.TmdbService;
-import com.berbageek.filmpopuler.data.db.DatabaseHelper;
-import com.berbageek.filmpopuler.data.db.contract.MovieRepository;
 import com.berbageek.filmpopuler.data.model.MovieData;
 import com.berbageek.filmpopuler.data.model.MovieDetail;
+import com.berbageek.filmpopuler.features.contracts.AddOrDeleteFavoriteMovieContract;
 import com.berbageek.filmpopuler.features.detail.loader.FavoriteMovieLoader;
+import com.berbageek.filmpopuler.features.service.AddOrDeleteFavoriteMovieService;
 import com.berbageek.filmpopuler.utils.AnimationUtils;
 import com.squareup.picasso.Picasso;
 
@@ -78,7 +81,7 @@ public class MovieDetailActivity extends AppCompatActivity
     AppBarLayout appBarLayout;
 
     SimpleDateFormat dateFormat = new SimpleDateFormat("d MMM yyy", Locale.getDefault());
-    AddOrDeleteFavoriteMovieTask addOrDeleteFavoriteMovieTask;
+    AddOrDeleteBroadcastReceiver addOrDeleteBroadcastReceiver;
     private boolean isTitleVisible = false;
     private boolean isTitleContainerVisible = true;
     private boolean isFavored = false;
@@ -127,14 +130,28 @@ public class MovieDetailActivity extends AppCompatActivity
         setUpToolbar();
         setUpDetails();
         setUpMovieDetail();
+
+        addOrDeleteBroadcastReceiver = new AddOrDeleteBroadcastReceiver();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(AddOrDeleteFavoriteMovieContract.ACTION_ADD_FAVORITE);
+        intentFilter.addAction(AddOrDeleteFavoriteMovieContract.ACTION_DELETE_FAVORITE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(addOrDeleteBroadcastReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(addOrDeleteBroadcastReceiver);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (addOrDeleteFavoriteMovieTask != null) {
-            addOrDeleteFavoriteMovieTask.cancel(true);
-        }
     }
 
     private void processIntent() {
@@ -208,11 +225,16 @@ public class MovieDetailActivity extends AppCompatActivity
         favoriteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (addOrDeleteFavoriteMovieTask != null) {
-                    addOrDeleteFavoriteMovieTask.cancel(true);
+                Intent favoriteIntent = new Intent(MovieDetailActivity.this, AddOrDeleteFavoriteMovieService.class);
+                if (isFavored) {
+                    favoriteIntent.setAction(AddOrDeleteFavoriteMovieContract.ACTION_DELETE_FAVORITE);
+                    favoriteIntent.putExtra(AddOrDeleteFavoriteMovieContract.EXTRA_MOVIE_ID, movieId);
+                } else {
+                    favoriteIntent.setAction(AddOrDeleteFavoriteMovieContract.ACTION_ADD_FAVORITE);
+                    favoriteIntent.putExtra(AddOrDeleteFavoriteMovieContract.EXTRA_MOVIE_DATA, movieData);
                 }
-                addOrDeleteFavoriteMovieTask = new AddOrDeleteFavoriteMovieTask(getApplicationContext());
-                addOrDeleteFavoriteMovieTask.execute(movieData);
+                startService(favoriteIntent);
+                disableFavoriteButton();
             }
         });
     }
@@ -345,41 +367,18 @@ public class MovieDetailActivity extends AppCompatActivity
         }
     }
 
-    private class AddOrDeleteFavoriteMovieTask extends AsyncTask<MovieData, Void, Boolean> {
-        MovieRepository movieRepository;
-
-        AddOrDeleteFavoriteMovieTask(Context context) {
-            movieRepository = DatabaseHelper.getInstance(context);
-        }
-
+    private class AddOrDeleteBroadcastReceiver extends BroadcastReceiver {
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            disableFavoriteButton();
-        }
-
-        @Override
-        protected Boolean doInBackground(MovieData... params) {
-            boolean result = false;
-            final MovieData data = params[0];
-            if (isFavored) {
-                movieRepository.removeFavoriteMovie(String.valueOf(data.getId()));
-            } else {
-                movieRepository.addFavoriteMovie(data);
-                result = true;
-            }
-            return result;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean result) {
-            super.onPostExecute(result);
-            if (!isCancelled()) {
-                isFavored = result;
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null) {
+                final String action = intent.getAction();
+                Log.d(TAG, "onReceive: " + action);
                 enableFavoriteButton();
-                if (result) {
+                if (AddOrDeleteFavoriteMovieContract.ACTION_ADD_FAVORITE.equals(action)) {
+                    isFavored = true;
                     setFavoriteImage();
-                } else {
+                } else if (AddOrDeleteFavoriteMovieContract.ACTION_DELETE_FAVORITE.equals(action)) {
+                    isFavored = false;
                     setNonFavoriteImage();
                 }
             }

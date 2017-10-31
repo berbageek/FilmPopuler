@@ -22,6 +22,10 @@
         <activity
             android:name=".features.detail.MovieDetailActivity"
             android:theme="@style/FitAppTheme" />
+
+        <service
+            android:name=".features.service.AddOrDeleteFavoriteMovieService"
+            android:exported="false" />
     </application>
 
 </manifest>

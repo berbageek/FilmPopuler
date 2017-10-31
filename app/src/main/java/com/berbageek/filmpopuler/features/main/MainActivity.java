@@ -1,10 +1,15 @@
 package com.berbageek.filmpopuler.features.main;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -18,6 +23,7 @@ import com.berbageek.filmpopuler.R;
 import com.berbageek.filmpopuler.data.api.TmdbService;
 import com.berbageek.filmpopuler.data.model.MovieData;
 import com.berbageek.filmpopuler.data.model.MovieDataResponse;
+import com.berbageek.filmpopuler.features.contracts.AddOrDeleteFavoriteMovieContract;
 import com.berbageek.filmpopuler.features.detail.MovieDetailActivity;
 import com.berbageek.filmpopuler.features.main.adapter.MainAdapter;
 import com.berbageek.filmpopuler.features.main.contract.MainListItemClickListener;
@@ -52,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     BottomNavigationView bottomNavigationView;
 
     int currentState = STATE_POPULAR_MOVIE;
+
+    FavoriteBroadcastReceiver favoriteBroadcastReceiver;
 
     LoaderManager.LoaderCallbacks<List<MovieData>> favoriteMovieLoaderCallback = new LoaderManager.LoaderCallbacks<List<MovieData>>() {
         @Override
@@ -93,6 +101,18 @@ public class MainActivity extends AppCompatActivity {
         } else {
             fetchFavoriteMovie();
         }
+
+        favoriteBroadcastReceiver = new FavoriteBroadcastReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(AddOrDeleteFavoriteMovieContract.ACTION_ADD_FAVORITE);
+        intentFilter.addAction(AddOrDeleteFavoriteMovieContract.ACTION_DELETE_FAVORITE);
+        LocalBroadcastManager.getInstance(this).registerReceiver(favoriteBroadcastReceiver, intentFilter);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(favoriteBroadcastReceiver);
     }
 
     @Override
@@ -230,4 +250,23 @@ public class MainActivity extends AppCompatActivity {
                 favoriteMovieLoaderCallback
         );
     }
+
+    class FavoriteBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent != null) {
+                final String action = intent.getAction();
+                if (AddOrDeleteFavoriteMovieContract.ACTION_ADD_FAVORITE.equals(action) || AddOrDeleteFavoriteMovieContract.ACTION_DELETE_FAVORITE.equals(action)) {
+                    if (currentState == STATE_FAVORITE_MOVIE) {
+                        getSupportLoaderManager().restartLoader(
+                                FavoriteMovieListLoader.FAVORITE_MOVIE_LIST_LOADER_ID,
+                                null,
+                                favoriteMovieLoaderCallback
+                        );
+                    }
+                }
+            }
+        }
+    }
+
 }
